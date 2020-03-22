@@ -1,0 +1,19 @@
+fname=$1;key=$k
+if [ "$fname" = "" ]
+then fname=$(date +%y%m%d)
+fi
+fname=$fname.a2c
+tmpfile=$(mktemp)
+
+#echo "Current directory:" $(pwd)
+
+if [ "$key" = "" ]
+then read -s key;#echo ""
+#echo -ne "Password:";
+fi
+key=$(echo -n $key|openssl dgst -sha256)
+
+cat $fname|openssl enc -aes-256-cbc -a -d -salt -pbkdf2 -k "$key" -out $tmpfile
+less $tmpfile
+rm -P $tmpfile
+unset key

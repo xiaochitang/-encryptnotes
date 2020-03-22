@@ -1,0 +1,19 @@
+fname=$1
+if [ "$fname" = "" ];
+then fname=$(date +%y%m%d);
+if [ -d ~/.record/ ];then cd ~/.record; fi;
+fi
+fname="$fname"
+
+echo -ne ':\r' && sleep 0.5 && echo -ne ' '
+read -s key;#echo " ";
+key=$(echo -n $key|openssl dgst -sha256)
+tmpfile=$(mktemp)
+content=""
+run=true
+
+if [ -f $fname ];then (openssl enc -aes-256-cbc -a -d -salt -pbkdf2 -k "$key" -in $fname -out $tmpfile) || (run=false);
+if [ "$(more $tmpfile)" = "" ];then run=false;fi;fi;
+
+if $run;then nano -mixt $tmpfile;content=$(more $tmpfile);
+(if [ "$content" != "" ];then openssl enc -aes-256-cbc -a -salt -pbkdf2 -k "$key" -in $tmpfile -out $fname;fi;);fi;rm -P "$tmpfile";unset key;
